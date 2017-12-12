@@ -16,8 +16,12 @@
   },
   "main": "canvg.js",
   "version": "1.0.0",
-  "devDependencies": {},
-  "scripts": {},
+  "devDependencies": {
+    "webpack": "^3.10.0"
+  },
+  "scripts": {
+    "build": "webpack"
+  },
   "license": "MIT",
   "files": [
     "canvg.js",
@@ -25,6 +29,7 @@
   ],
   "dependencies": {
     "rgbcolor": "0.0.4",
+    "sizzle": "^2.3.3",
     "stackblur": "^1.0.0",
     "xmldom": "^0.1.27"
   }
