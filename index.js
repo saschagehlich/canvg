@@ -106,7 +106,7 @@ if (typeof global.Element !== 'undefined' && typeof global.Element.prototype.mat
   if (typeof matchesSelector === 'undefined') {
     matchesSelector = typeof global.Sizzle !== 'undefined'
       ? global.Sizzle.matchesSelector
-      : require('sizzle').matchesSelector
+      : () => false
   }
 }
 

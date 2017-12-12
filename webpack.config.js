@@ -22,7 +22,6 @@ module.exports = [{
   externals: {
     rgbcolor: 'rgbcolor',
     stackblur: 'stackblur',
-    xmldom: 'xmldom',
-    sizzle: 'sizzle'
+    xmldom: 'xmldom'
   }
 }]

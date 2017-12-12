@@ -29,7 +29,6 @@
   ],
   "dependencies": {
     "rgbcolor": "0.0.4",
-    "sizzle": "^2.3.3",
     "stackblur": "^1.0.0",
     "xmldom": "^0.1.27"
   }
