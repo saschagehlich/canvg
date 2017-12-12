@@ -1,17 +1,8 @@
-/*
- * canvg.js - Javascript SVG parser and renderer on Canvas
- * MIT Licensed
- * Gabe Lerner (gabelerner@gmail.com)
- * http://code.google.com/p/canvg/
- *
- * Requires: rgbcolor.js - http://www.phpied.com/rgb-color-parser-in-javascript/
- */
+/* eslint-disable eqeqeq */
 
 const RGBColor = require('rgbcolor')
 const StackBlur = require('stackblur')
-const DOMParser = typeof global.DOMParser !== 'undefined'
-  ? global.DOMParser
-  : require('xmldom').DomParser
+const DOMParser = global.DOMParser || require('xmldom').DOMParser
 
 // canvg(target, s)
 // empty parameters: replace all 'svg' elements on page with 'canvas' elements
@@ -30,7 +21,7 @@ const DOMParser = typeof global.DOMParser !== 'undefined'
 //     forceRedraw: function => will call the function on every frame, if it returns true, will redraw
 var canvg = function (target, s, opts) {
   // no parameters
-  if (target === null && s === null && opts === null) {
+  if (target == null && s == null && opts == null) {
     var svgTags = document.querySelectorAll('svg')
     for (var i = 0; i < svgTags.length; i++) {
       var svgTag = svgTags[i]
@@ -51,16 +42,16 @@ var canvg = function (target, s, opts) {
   }
 
   // store class on canvas
-  if (target.svg !== null) target.svg.stop()
+  if (target.svg != null) target.svg.stop()
   var svg = build(opts || {})
   // on i.e. 8 for flash canvas, we can't assign the property so check for it
-  if (!(target.childNodes.length === 1 && target.childNodes[0].nodeName === 'OBJECT')) target.svg = svg
+  if (typeof target.childNodes !== 'undefined' && !(target.childNodes.length == 1 && target.childNodes[0].nodeName == 'OBJECT')) target.svg = svg
 
   var ctx = target.getContext('2d')
   if (typeof s.documentElement !== 'undefined') {
     // load from xml doc
     svg.loadXmlDoc(ctx, s)
-  } else if (s.substr(0, 1) === '<') {
+  } else if (s.substr(0, 1) == '<') {
     // load from xml string
     svg.loadXml(ctx, s)
   } else {
@@ -71,23 +62,23 @@ var canvg = function (target, s, opts) {
 
 // see https://developer.mozilla.org/en-US/docs/Web/API/Element.matches
 var matchesSelector
-if (typeof global.Element !== 'undefined' && typeof global.Element.prototype.matches !== 'undefined') {
+if (typeof Element !== 'undefined' && typeof Element.prototype.matches !== 'undefined') {
   matchesSelector = function (node, selector) {
     return node.matches(selector)
   }
-} else if (typeof global.Element !== 'undefined' && typeof global.Element.prototype.webkitMatchesSelector !== 'undefined') {
+} else if (typeof Element !== 'undefined' && typeof Element.prototype.webkitMatchesSelector !== 'undefined') {
   matchesSelector = function (node, selector) {
     return node.webkitMatchesSelector(selector)
   }
-} else if (typeof global.Element !== 'undefined' && typeof global.Element.prototype.mozMatchesSelector !== 'undefined') {
+} else if (typeof Element !== 'undefined' && typeof Element.prototype.mozMatchesSelector !== 'undefined') {
   matchesSelector = function (node, selector) {
     return node.mozMatchesSelector(selector)
   }
-} else if (typeof global.Element !== 'undefined' && typeof global.Element.prototype.msMatchesSelector !== 'undefined') {
+} else if (typeof Element !== 'undefined' && typeof Element.prototype.msMatchesSelector !== 'undefined') {
   matchesSelector = function (node, selector) {
     return node.msMatchesSelector(selector)
   }
-} else if (typeof global.Element !== 'undefined' && typeof global.Element.prototype.oMatchesSelector !== 'undefined') {
+} else if (typeof Element !== 'undefined' && typeof Element.prototype.oMatchesSelector !== 'undefined') {
   matchesSelector = function (node, selector) {
     return node.oMatchesSelector(selector)
   }
@@ -97,14 +88,14 @@ if (typeof global.Element !== 'undefined' && typeof global.Element.prototype.mat
   // or Zepto: http://zeptojs.com/#
   // without it, this is a ReferenceError
 
-  if (typeof global.jQuery === 'function' || typeof global.Zepto === 'function') {
+  if (typeof jQuery === 'function' || typeof Zepto === 'function') {
     matchesSelector = function (node, selector) {
       return global.$(node).is(selector)
     }
   }
 
   if (typeof matchesSelector === 'undefined') {
-    matchesSelector = typeof global.Sizzle !== 'undefined'
+    matchesSelector = typeof Sizzle !== 'undefined'
       ? global.Sizzle.matchesSelector
       : () => false
   }
@@ -112,24 +103,24 @@ if (typeof global.Element !== 'undefined' && typeof global.Element.prototype.mat
 
 // slightly modified version of https://github.com/keeganstreet/specificity/blob/master/specificity.js
 var attributeRegex = /(\[[^\]]+\])/g
-var idRegex = /(#[^\s+>~.[:]+)/g
-var classRegex = /(\.[^\s+>~.[:]+)/g
-var pseudoElementRegex = /(::[^\s+>~.[:]+|:first-line|:first-letter|:before|:after)/gi
-var pseudoClassWithBracketsRegex = /(:[\w-]+\([^)]*\))/gi
-var pseudoClassRegex = /(:[^\s+>~.[:]+)/g
-var elementRegex = /([^\s+>~.[:]+)/g
+var idRegex = /(#[^\s\+>~\.\[:]+)/g
+var classRegex = /(\.[^\s\+>~\.\[:]+)/g
+var pseudoElementRegex = /(::[^\s\+>~\.\[:]+|:first-line|:first-letter|:before|:after)/gi
+var pseudoClassWithBracketsRegex = /(:[\w-]+\([^\)]*\))/gi
+var pseudoClassRegex = /(:[^\s\+>~\.\[:]+)/g
+var elementRegex = /([^\s\+>~\.\[:]+)/g
 function getSelectorSpecificity (selector) {
   var typeCount = [0, 0, 0]
   var findMatch = function (regex, type) {
     var matches = selector.match(regex)
-    if (matches === null) {
+    if (matches == null) {
       return
     }
     typeCount[type] += matches.length
     selector = selector.replace(regex, ' ')
   }
 
-  selector = selector.replace(/:not\(([^)]*)\)/g, '     $1 ')
+  selector = selector.replace(/:not\(([^\)]*)\)/g, '     $1 ')
   selector = selector.replace(/{[\s\S]*/gm, ' ')
   findMatch(attributeRegex, 1)
   findMatch(idRegex, 0)
@@ -137,8 +128,8 @@ function getSelectorSpecificity (selector) {
   findMatch(pseudoElementRegex, 2)
   findMatch(pseudoClassWithBracketsRegex, 1)
   findMatch(pseudoClassRegex, 1)
-  selector = selector.replace(/[*\s+>~]/g, ' ')
-  selector = selector.replace(/[#.]/g, ' ')
+  selector = selector.replace(/[\*\s\+>~]/g, ' ')
+  selector = selector.replace(/[#\.]/g, ' ')
   findMatch(elementRegex, 2)
   return typeCount.join('')
 }
@@ -150,7 +141,7 @@ function build (opts) {
   svg.MAX_VIRTUAL_PIXELS = 30000
 
   svg.log = function (msg) {}
-  if (svg.opts['log'] === true && typeof console !== 'undefined') {
+  if (svg.opts['log'] == true && typeof console !== 'undefined') {
     svg.log = function (msg) { console.log(msg) }
   };
 
@@ -173,9 +164,9 @@ function build (opts) {
       this.width = function () { return this.Current().width }
       this.height = function () { return this.Current().height }
       this.ComputeSize = function (d) {
-        if (d !== null && typeof d === 'number') return d
-        if (d === 'x') return this.width()
-        if (d === 'y') return this.height()
+        if (d != null && typeof d === 'number') return d
+        if (d == 'x') return this.width()
+        if (d == 'y') return this.height()
         return Math.sqrt(Math.pow(this.width(), 2) + Math.pow(this.height(), 2)) / Math.sqrt(2)
       }
     }()
@@ -199,7 +190,7 @@ function build (opts) {
   // ajax
   svg.ajax = function (url) {
     var AJAX
-    if (typeof global.XMLHttpRequest !== 'undefined') { AJAX = new global.XMLHttpRequest() } else { AJAX = new global.ActiveXObject('Microsoft.XMLHTTP') }
+    if (global.XMLHttpRequest) { AJAX = new global.XMLHttpRequest() } else { AJAX = new global.ActiveXObject('Microsoft.XMLHTTP') }
     if (AJAX) {
       AJAX.open('GET', url, false)
       AJAX.send(null)
@@ -210,13 +201,13 @@ function build (opts) {
 
   // parse xml
   svg.parseXml = function (xml) {
-    if (typeof global.Windows !== 'undefined' && typeof global.Windows.Data !== 'undefined' && typeof global.Windows.Data.Xml !== 'undefined') {
+    if (typeof Windows !== 'undefined' && typeof global.Windows.Data !== 'undefined' && typeof global.Windows.Data.Xml !== 'undefined') {
       var xmlDoc = new global.Windows.Data.Xml.Dom.XmlDocument()
       var settings = new global.Windows.Data.Xml.Dom.XmlLoadSettings()
       settings.prohibitDtd = false
       xmlDoc.loadXml(xml, settings)
       return xmlDoc
-    } else if (global.DOMParser) {
+    } else if (DOMParser) {
       try {
         var parser = new DOMParser()
         return parser.parseFromString(xml, 'image/svg+xml')
@@ -242,7 +233,7 @@ function build (opts) {
   }
 
   svg.Property.prototype.hasValue = function () {
-    return (this.value !== null && this.value !== '')
+    return (this.value != null && this.value !== '')
   }
 
     // return the numerical value of the property
@@ -270,7 +261,7 @@ function build (opts) {
       // augment the current color value with the opacity
   svg.Property.prototype.addOpacity = function (opacityProp) {
     var newValue = this.value
-    if (opacityProp.value !== null && opacityProp.value !== '' && typeof this.value === 'string') { // can only add opacity to colors, not patterns
+    if (opacityProp.value != null && opacityProp.value != '' && typeof this.value === 'string') { // can only add opacity to colors, not patterns
       var color = new RGBColor(this.value)
       if (color.ok) {
         newValue = 'rgba(' + color.r + ', ' + color.g + ', ' + color.b + ', ' + opacityProp.numValue() + ')'
@@ -282,26 +273,26 @@ function build (opts) {
     // definition extensions
       // get the definition from the definitions table
   svg.Property.prototype.getDefinition = function () {
-    var name = this.value.match(/#([^)'"]+)/)
+    var name = this.value.match(/#([^\)'"]+)/)
     if (name) { name = name[1] }
     if (!name) { name = this.value }
     return svg.Definitions[name]
   }
 
   svg.Property.prototype.isUrlDefinition = function () {
-    return this.value.indexOf('url(') === 0
+    return this.value.indexOf('url(') == 0
   }
 
   svg.Property.prototype.getFillStyleDefinition = function (e, opacityProp) {
     var def = this.getDefinition()
 
         // gradient
-    if (def !== null && def.createGradient) {
+    if (def != null && def.createGradient) {
       return def.createGradient(svg.ctx, e, opacityProp)
     }
 
         // pattern
-    if (def !== null && def.createPattern) {
+    if (def != null && def.createPattern) {
       if (def.getHrefAttribute().hasValue()) {
         var pt = def.attribute('patternTransform')
         def = def.getHrefAttribute().getDefinition()
@@ -329,7 +320,7 @@ function build (opts) {
 
   svg.Property.prototype.getUnits = function () {
     var s = this.value + ''
-    return s.replace(/[0-9.-]/g, '')
+    return s.replace(/[0-9\.\-]/g, '')
   }
 
       // get the length as pixels
@@ -398,7 +389,7 @@ function build (opts) {
     this.Weights = 'normal|bold|bolder|lighter|100|200|300|400|500|600|700|800|900|inherit'
 
     this.CreateFont = function (fontStyle, fontVariant, fontWeight, fontSize, fontFamily, inherit) {
-      var f = inherit !== null ? this.Parse(inherit) : this.CreateFont('', '', '', '', '', svg.ctx.font)
+      var f = inherit != null ? this.Parse(inherit) : this.CreateFont('', '', '', '', '', svg.ctx.font)
       return {
         fontFamily: fontFamily || f.fontFamily,
         fontSize: fontSize || f.fontSize,
@@ -416,8 +407,8 @@ function build (opts) {
       var set = { fontSize: false, fontStyle: false, fontWeight: false, fontVariant: false }
       var ff = ''
       for (var i = 0; i < d.length; i++) {
-        if (!set.fontStyle && that.Styles.indexOf(d[i]) !== -1) { if (d[i] !== 'inherit') f.fontStyle = d[i]; set.fontStyle = true } else if (!set.fontVariant && that.Variants.indexOf(d[i]) !== -1) { if (d[i] !== 'inherit') f.fontVariant = d[i]; set.fontStyle = set.fontVariant = true } else if (!set.fontWeight && that.Weights.indexOf(d[i]) !== -1) { if (d[i] !== 'inherit') f.fontWeight = d[i]; set.fontStyle = set.fontVariant = set.fontWeight = true } else if (!set.fontSize) { if (d[i] !== 'inherit') f.fontSize = d[i].split('/')[0]; set.fontStyle = set.fontVariant = set.fontWeight = set.fontSize = true } else { if (d[i] !== 'inherit') ff += d[i] }
-      } if (ff !== '') f.fontFamily = ff
+        if (!set.fontStyle && that.Styles.indexOf(d[i]) != -1) { if (d[i] != 'inherit') f.fontStyle = d[i]; set.fontStyle = true } else if (!set.fontVariant && that.Variants.indexOf(d[i]) != -1) { if (d[i] != 'inherit') f.fontVariant = d[i]; set.fontStyle = set.fontVariant = true } else if (!set.fontWeight && that.Weights.indexOf(d[i]) != -1) { if (d[i] != 'inherit') f.fontWeight = d[i]; set.fontStyle = set.fontVariant = set.fontWeight = true } else if (!set.fontSize) { if (d[i] != 'inherit') f.fontSize = d[i].split('/')[0]; set.fontStyle = set.fontVariant = set.fontWeight = set.fontSize = true } else { if (d[i] != 'inherit') ff += d[i] }
+      } if (ff != '') f.fontFamily = ff
       return f
     }
   }()
@@ -471,7 +462,7 @@ function build (opts) {
     this.height = function () { return this.y2 - this.y1 }
 
     this.addPoint = function (x, y) {
-      if (x !== null) {
+      if (x != null) {
         if (isNaN(this.x1) || isNaN(this.x2)) {
           this.x1 = x
           this.x2 = x
@@ -480,7 +471,7 @@ function build (opts) {
         if (x > this.x2) this.x2 = x
       }
 
-      if (y !== null) {
+      if (y != null) {
         if (isNaN(this.y1) || isNaN(this.y2)) {
           this.y1 = y
           this.y2 = y
@@ -507,14 +498,11 @@ function build (opts) {
 
     this.addBezierCurve = function (p0x, p0y, p1x, p1y, p2x, p2y, p3x, p3y) {
       // from http://blog.hackers-cafe.net/2009/06/how-to-calculate-bezier-curves-bounding.html
-      var p0 = [p0x, p0y]
-      var p1 = [p1x, p1y]
-      var p2 = [p2x, p2y]
-      var p3 = [p3x, p3y]
+      var p0 = [p0x, p0y], p1 = [p1x, p1y], p2 = [p2x, p2y], p3 = [p3x, p3y]
       this.addPoint(p0[0], p0[1])
       this.addPoint(p3[0], p3[1])
 
-      for (var i = 0; i <= 1; i++) {
+      for (i = 0; i <= 1; i++) {
         var f = function (t) {
           return Math.pow(1 - t, 3) * p0[i] +
           3 * Math.pow(1 - t, 2) * t * p1[i] +
@@ -526,12 +514,12 @@ function build (opts) {
         var a = -3 * p0[i] + 9 * p1[i] - 9 * p2[i] + 3 * p3[i]
         var c = 3 * p1[i] - 3 * p0[i]
 
-        if (a === 0) {
-          if (b === 0) continue
+        if (a == 0) {
+          if (b == 0) continue
           var t = -c / b
           if (t > 0 && t < 1) {
-            if (i === 0) this.addX(f(t))
-            if (i === 1) this.addY(f(t))
+            if (i == 0) this.addX(f(t))
+            if (i == 1) this.addY(f(t))
           }
           continue
         }
@@ -540,13 +528,13 @@ function build (opts) {
         if (b2ac < 0) continue
         var t1 = (-b + Math.sqrt(b2ac)) / (2 * a)
         if (t1 > 0 && t1 < 1) {
-          if (i === 0) this.addX(f(t1))
-          if (i === 1) this.addY(f(t1))
+          if (i == 0) this.addX(f(t1))
+          if (i == 1) this.addY(f(t1))
         }
         var t2 = (-b - Math.sqrt(b2ac)) / (2 * a)
         if (t2 > 0 && t2 < 1) {
-          if (i === 0) this.addX(f(t2))
-          if (i === 1) this.addY(f(t2))
+          if (i == 0) this.addX(f(t2))
+          if (i == 1) this.addY(f(t2))
         }
       }
     }
@@ -565,7 +553,7 @@ function build (opts) {
     this.Type = {}
 
     // translate
-    this.Type.Translate = function (s) {
+    this.Type.translate = function (s) {
       this.p = svg.CreatePoint(s)
       this.apply = function (ctx) {
         ctx.translate(this.p.x || 0.0, this.p.y || 0.0)
@@ -579,7 +567,7 @@ function build (opts) {
     }
 
     // rotate
-    this.Type.Rotate = function (s) {
+    this.Type.rotate = function (s) {
       var a = svg.ToNumberArray(s)
       this.angle = new svg.Property('angle', a[0])
       this.cx = a[1] || 0
@@ -602,7 +590,7 @@ function build (opts) {
       }
     }
 
-    this.Type.Scale = function (s) {
+    this.Type.scale = function (s) {
       this.p = svg.CreatePoint(s)
       this.apply = function (ctx) {
         ctx.scale(this.p.x || 1.0, this.p.y || this.p.x || 1.0)
@@ -615,7 +603,7 @@ function build (opts) {
       }
     }
 
-    this.Type.Matrix = function (s) {
+    this.Type.matrix = function (s) {
       this.m = svg.ToNumberArray(s)
       this.apply = function (ctx) {
         ctx.transform(this.m[0], this.m[1], this.m[2], this.m[3], this.m[4], this.m[5])
@@ -650,21 +638,21 @@ function build (opts) {
       this.base(s)
       this.angle = new svg.Property('angle', s)
     }
-    this.Type.SkewBase.prototype = new this.Type.Matrix()
+    this.Type.SkewBase.prototype = new this.Type.matrix()
 
-    this.Type.SkewX = function (s) {
+    this.Type.skewX = function (s) {
       this.base = that.Type.SkewBase
       this.base(s)
       this.m = [1, 0, Math.tan(this.angle.toRadians()), 1, 0, 0]
     }
     this.Type.skewX.prototype = new this.Type.SkewBase()
 
-    this.Type.SkewY = function (s) {
+    this.Type.skewY = function (s) {
       this.base = that.Type.SkewBase
       this.base(s)
       this.m = [1, Math.tan(this.angle.toRadians()), 0, 1, 0, 0]
     }
-    this.Type.SkewY.prototype = new this.Type.SkewBase()
+    this.Type.skewY.prototype = new this.Type.SkewBase()
 
     this.transforms = []
 
@@ -690,9 +678,9 @@ function build (opts) {
     for (var i = 0; i < data.length; i++) {
       var type = svg.trim(data[i].split('(')[0])
       var s = data[i].split('(')[1].replace(')', '')
-      var TransformType = this.Type[type]
-      if (typeof TransformType !== 'undefined') {
-        var transform = new TransformType(s)
+      var transformType = this.Type[type]
+      if (typeof transformType !== 'undefined') {
+        var transform = new transformType(s)
         transform.type = type
         this.transforms.push(transform)
       }
@@ -712,8 +700,8 @@ function build (opts) {
     var scaleY = height / desiredHeight
     var scaleMin = Math.min(scaleX, scaleY)
     var scaleMax = Math.max(scaleX, scaleY)
-    if (meetOrSlice === 'meet') { desiredWidth *= scaleMin; desiredHeight *= scaleMin }
-    if (meetOrSlice === 'slice') { desiredWidth *= scaleMax; desiredHeight *= scaleMax }
+    if (meetOrSlice == 'meet') { desiredWidth *= scaleMin; desiredHeight *= scaleMin }
+    if (meetOrSlice == 'slice') { desiredWidth *= scaleMax; desiredHeight *= scaleMax }
 
     refX = new svg.Property('refX', refX)
     refY = new svg.Property('refY', refY)
@@ -721,19 +709,19 @@ function build (opts) {
       ctx.translate(-scaleMin * refX.toPixels('x'), -scaleMin * refY.toPixels('y'))
     } else {
       // align
-      if (align.match(/^xMid/) && ((meetOrSlice === 'meet' && scaleMin === scaleY) || (meetOrSlice === 'slice' && scaleMax === scaleY))) ctx.translate(width / 2.0 - desiredWidth / 2.0, 0)
-      if (align.match(/YMid$/) && ((meetOrSlice === 'meet' && scaleMin === scaleX) || (meetOrSlice === 'slice' && scaleMax === scaleX))) ctx.translate(0, height / 2.0 - desiredHeight / 2.0)
-      if (align.match(/^xMax/) && ((meetOrSlice === 'meet' && scaleMin === scaleY) || (meetOrSlice === 'slice' && scaleMax === scaleY))) ctx.translate(width - desiredWidth, 0)
-      if (align.match(/YMax$/) && ((meetOrSlice === 'meet' && scaleMin === scaleX) || (meetOrSlice === 'slice' && scaleMax === scaleX))) ctx.translate(0, height - desiredHeight)
+      if (align.match(/^xMid/) && ((meetOrSlice == 'meet' && scaleMin == scaleY) || (meetOrSlice == 'slice' && scaleMax == scaleY))) ctx.translate(width / 2.0 - desiredWidth / 2.0, 0)
+      if (align.match(/YMid$/) && ((meetOrSlice == 'meet' && scaleMin == scaleX) || (meetOrSlice == 'slice' && scaleMax == scaleX))) ctx.translate(0, height / 2.0 - desiredHeight / 2.0)
+      if (align.match(/^xMax/) && ((meetOrSlice == 'meet' && scaleMin == scaleY) || (meetOrSlice == 'slice' && scaleMax == scaleY))) ctx.translate(width - desiredWidth, 0)
+      if (align.match(/YMax$/) && ((meetOrSlice == 'meet' && scaleMin == scaleX) || (meetOrSlice == 'slice' && scaleMax == scaleX))) ctx.translate(0, height - desiredHeight)
     }
 
     // scale
-    if (align === 'none') ctx.scale(scaleX, scaleY)
-    else if (meetOrSlice === 'meet') ctx.scale(scaleMin, scaleMin)
-    else if (meetOrSlice === 'slice') ctx.scale(scaleMax, scaleMax)
+    if (align == 'none') ctx.scale(scaleX, scaleY)
+    else if (meetOrSlice == 'meet') ctx.scale(scaleMin, scaleMin)
+    else if (meetOrSlice == 'slice') ctx.scale(scaleMax, scaleMax)
 
     // translate
-    ctx.translate(minX === null ? 0 : -minX, minY === null ? 0 : -minY)
+    ctx.translate(minX == null ? 0 : -minX, minY == null ? 0 : -minY)
   }
 
   // elements
@@ -750,15 +738,15 @@ function build (opts) {
     // get or create attribute
     this.attribute = function (name, createIfNotExists) {
       var a = this.attributes[name]
-      if (a !== null) return a
+      if (a != null) return a
 
-      if (createIfNotExists === true) { a = new svg.Property(name, ''); this.attributes[name] = a }
+      if (createIfNotExists == true) { a = new svg.Property(name, ''); this.attributes[name] = a }
       return a || svg.EmptyProperty
     }
 
     this.getHrefAttribute = function () {
       for (var a in this.attributes) {
-        if (a === 'href' || a.match(/:href$/)) {
+        if (a == 'href' || a.match(/:href$/)) {
           return this.attributes[a]
         }
       }
@@ -768,43 +756,43 @@ function build (opts) {
     // get or create style, crawls up node tree
     this.style = function (name, createIfNotExists, skipAncestors) {
       var s = this.styles[name]
-      if (s !== null) return s
+      if (s != null) return s
 
       var a = this.attribute(name)
-      if (a !== null && a.hasValue()) {
+      if (a != null && a.hasValue()) {
         this.styles[name] = a // move up to me to cache
         return a
       }
 
-      if (skipAncestors !== true) {
+      if (skipAncestors != true) {
         var p = this.parent
-        if (p !== null) {
+        if (p != null) {
           var ps = p.style(name)
-          if (ps !== null && ps.hasValue()) {
+          if (ps != null && ps.hasValue()) {
             return ps
           }
         }
       }
 
-      if (createIfNotExists === true) { s = new svg.Property(name, ''); this.styles[name] = s }
+      if (createIfNotExists == true) { s = new svg.Property(name, ''); this.styles[name] = s }
       return s || svg.EmptyProperty
     }
 
     // base render
     this.render = function (ctx) {
       // don't render display=none
-      if (this.style('display').value === 'none') return
+      if (this.style('display').value == 'none') return
 
       // don't render visibility=hidden
-      if (this.style('visibility').value === 'hidden') return
+      if (this.style('visibility').value == 'hidden') return
 
       ctx.save()
       if (this.style('mask').hasValue()) { // mask
         var mask = this.style('mask').getDefinition()
-        if (mask !== null) mask.apply(ctx, this)
+        if (mask != null) mask.apply(ctx, this)
       } else if (this.style('filter').hasValue()) { // filter
         var filter = this.style('filter').getDefinition()
-        if (filter !== null) filter.apply(ctx, this)
+        if (filter != null) filter.apply(ctx, this)
       } else {
         this.setContext(ctx)
         this.renderChildren(ctx)
@@ -834,16 +822,16 @@ function build (opts) {
       var child = childNode
       if (create) child = svg.CreateElement(childNode)
       child.parent = this
-      if (child.type !== 'title') { this.children.push(child) }
+      if (child.type != 'title') { this.children.push(child) }
     }
 
     this.addStylesFromStyleDefinition = function () {
       // add styles
       for (var selector in svg.Styles) {
-        if (selector[0] !== '@' && matchesSelector(node, selector)) {
+        if (selector[0] != '@' && matchesSelector(node, selector)) {
           var styles = svg.Styles[selector]
           var specificity = svg.StylesSpecificity[selector]
-          if (styles !== null) {
+          if (styles != null) {
             for (var name in styles) {
               var existingSpecificity = this.stylesSpecificity[name]
               if (typeof existingSpecificity === 'undefined') {
@@ -860,7 +848,7 @@ function build (opts) {
     }
 
     // Microsoft Edge fix
-    var allUppercase = new RegExp('^[A-Z-]+$')
+    var allUppercase = new RegExp('^[A-Z\-]+$')
     var normalizeAttributeName = function (name) {
       if (allUppercase.test(name)) {
         return name.toLowerCase()
@@ -868,7 +856,7 @@ function build (opts) {
       return name
     }
 
-    if (node !== null && node.nodeType === 1) { // ELEMENT_NODE
+    if (node != null && node.nodeType == 1) { // ELEMENT_NODE
       // add attributes
       for (var i = 0; i < node.attributes.length; i++) {
         var attribute = node.attributes[i]
@@ -882,7 +870,7 @@ function build (opts) {
       if (this.attribute('style').hasValue()) {
         var styles = this.attribute('style').value.split(';')
         for (var i = 0; i < styles.length; i++) {
-          if (svg.trim(styles[i]) !== '') {
+          if (svg.trim(styles[i]) != '') {
             var style = styles[i].split(':')
             var name = svg.trim(style[0])
             var value = svg.trim(style[1])
@@ -893,18 +881,18 @@ function build (opts) {
 
       // add id
       if (this.attribute('id').hasValue()) {
-        if (svg.Definitions[this.attribute('id').value] === null) {
+        if (svg.Definitions[this.attribute('id').value] == null) {
           svg.Definitions[this.attribute('id').value] = this
         }
       }
 
       // add children
-      for (i = 0; i < node.childNodes.length; i++) {
+      for (var i = 0; i < node.childNodes.length; i++) {
         var childNode = node.childNodes[i]
-        if (childNode.nodeType === 1) this.addChild(childNode, true) // ELEMENT_NODE
-        if (this.captureTextNodes && (childNode.nodeType === 3 || childNode.nodeType === 4)) {
+        if (childNode.nodeType == 1) this.addChild(childNode, true) // ELEMENT_NODE
+        if (this.captureTextNodes && (childNode.nodeType == 3 || childNode.nodeType == 4)) {
           var text = childNode.value || childNode.text || childNode.textContent || ''
-          if (svg.compressSpaces(text) !== '') {
+          if (svg.compressSpaces(text) != '') {
             this.addChild(new svg.Element.tspan(childNode), false) // TEXT_NODE
           }
         }
@@ -920,11 +908,11 @@ function build (opts) {
       // fill
       if (this.style('fill').isUrlDefinition()) {
         var fs = this.style('fill').getFillStyleDefinition(this, this.style('fill-opacity'))
-        if (fs !== null) ctx.fillStyle = fs
+        if (fs != null) ctx.fillStyle = fs
       } else if (this.style('fill').hasValue()) {
         var fillStyle = this.style('fill')
-        if (fillStyle.value === 'currentColor') fillStyle.value = this.style('color').value
-        if (fillStyle.value !== 'inherit') ctx.fillStyle = (fillStyle.value === 'none' ? 'rgba(0,0,0,0)' : fillStyle.value)
+        if (fillStyle.value == 'currentColor') fillStyle.value = this.style('color').value
+        if (fillStyle.value != 'inherit') ctx.fillStyle = (fillStyle.value == 'none' ? 'rgba(0,0,0,0)' : fillStyle.value)
       }
       if (this.style('fill-opacity').hasValue()) {
         var fillStyle = new svg.Property('fill', ctx.fillStyle)
@@ -935,11 +923,11 @@ function build (opts) {
       // stroke
       if (this.style('stroke').isUrlDefinition()) {
         var fs = this.style('stroke').getFillStyleDefinition(this, this.style('stroke-opacity'))
-        if (fs !== null) ctx.strokeStyle = fs
+        if (fs != null) ctx.strokeStyle = fs
       } else if (this.style('stroke').hasValue()) {
         var strokeStyle = this.style('stroke')
-        if (strokeStyle.value === 'currentColor') strokeStyle.value = this.style('color').value
-        if (strokeStyle.value !== 'inherit') ctx.strokeStyle = (strokeStyle.value === 'none' ? 'rgba(0,0,0,0)' : strokeStyle.value)
+        if (strokeStyle.value == 'currentColor') strokeStyle.value = this.style('color').value
+        if (strokeStyle.value != 'inherit') ctx.strokeStyle = (strokeStyle.value == 'none' ? 'rgba(0,0,0,0)' : strokeStyle.value)
       }
       if (this.style('stroke-opacity').hasValue()) {
         var strokeStyle = new svg.Property('stroke', ctx.strokeStyle)
@@ -948,14 +936,14 @@ function build (opts) {
       }
       if (this.style('stroke-width').hasValue()) {
         var newLineWidth = this.style('stroke-width').toPixels()
-        ctx.lineWidth = newLineWidth === 0 ? 0.001 : newLineWidth // browsers don't respect 0
+        ctx.lineWidth = newLineWidth == 0 ? 0.001 : newLineWidth // browsers don't respect 0
       }
       if (this.style('stroke-linecap').hasValue()) ctx.lineCap = this.style('stroke-linecap').value
       if (this.style('stroke-linejoin').hasValue()) ctx.lineJoin = this.style('stroke-linejoin').value
       if (this.style('stroke-miterlimit').hasValue()) ctx.miterLimit = this.style('stroke-miterlimit').value
-      if (this.style('stroke-dasharray').hasValue() && this.style('stroke-dasharray').value !== 'none') {
+      if (this.style('stroke-dasharray').hasValue() && this.style('stroke-dasharray').value != 'none') {
         var gaps = svg.ToNumberArray(this.style('stroke-dasharray').value)
-        if (typeof ctx.setLineDash !== 'undefined') { ctx.setLineDash(gaps) } else if (typeof ctx.webkitLineDash !== 'undefined') { ctx.webkitLineDash = gaps } else if (typeof ctx.mozDash !== 'undefined' && !(gaps.length === 1 && gaps[0] === 0)) { ctx.mozDash = gaps }
+        if (typeof ctx.setLineDash !== 'undefined') { ctx.setLineDash(gaps) } else if (typeof ctx.webkitLineDash !== 'undefined') { ctx.webkitLineDash = gaps } else if (typeof ctx.mozDash !== 'undefined' && !(gaps.length == 1 && gaps[0] == 0)) { ctx.mozDash = gaps }
 
         var offset = this.style('stroke-dashoffset').numValueOrDefault(1)
         if (typeof ctx.lineDashOffset !== 'undefined') { ctx.lineDashOffset = offset } else if (typeof ctx.webkitLineDashOffset !== 'undefined') { ctx.webkitLineDashOffset = offset } else if (typeof ctx.mozDashOffset !== 'undefined') { ctx.mozDashOffset = offset }
@@ -980,7 +968,7 @@ function build (opts) {
       // clip
       if (this.style('clip-path', false, true).hasValue()) {
         var clip = this.style('clip-path', false, true).getDefinition()
-        if (clip !== null) clip.apply(ctx)
+        if (clip != null) clip.apply(ctx)
       }
 
       // opacity
@@ -996,20 +984,20 @@ function build (opts) {
     this.base(node)
 
     this.path = function (ctx) {
-      if (ctx !== null) ctx.beginPath()
+      if (ctx != null) ctx.beginPath()
       return new svg.BoundingBox()
     }
 
     this.renderChildren = function (ctx) {
       this.path(ctx)
       svg.Mouse.checkPath(this, ctx)
-      if (ctx.fillStyle !== '') {
-        if (this.style('fill-rule').valueOrDefault('inherit') !== 'inherit') { ctx.fill(this.style('fill-rule').value) } else { ctx.fill() }
+      if (ctx.fillStyle != '') {
+        if (this.style('fill-rule').valueOrDefault('inherit') != 'inherit') { ctx.fill(this.style('fill-rule').value) } else { ctx.fill() }
       }
-      if (ctx.strokeStyle !== '') ctx.stroke()
+      if (ctx.strokeStyle != '') ctx.stroke()
 
       var markers = this.getMarkers()
-      if (markers !== null) {
+      if (markers != null) {
         if (this.style('marker-start').isUrlDefinition()) {
           var marker = this.style('marker-start').getDefinition()
           marker.render(ctx, markers[0][0], markers[0][1])
@@ -1082,7 +1070,7 @@ function build (opts) {
           y = -this.attribute('refY').toPixels('y')
         }
 
-        if (this.attribute('overflow').valueOrDefault('hidden') !== 'visible') {
+        if (this.attribute('overflow').valueOrDefault('hidden') != 'visible') {
           ctx.beginPath()
           ctx.moveTo(x, y)
           ctx.lineTo(width, y)
@@ -1136,7 +1124,7 @@ function build (opts) {
       if (this.attribute('ry').hasValue() && !this.attribute('rx').hasValue()) rx = ry
       rx = Math.min(rx, width / 2.0)
       ry = Math.min(ry, height / 2.0)
-      if (ctx !== null) {
+      if (ctx != null) {
         ctx.beginPath()
         ctx.moveTo(x + rx, y)
         ctx.lineTo(x + width - rx, y)
@@ -1165,7 +1153,7 @@ function build (opts) {
       var cy = this.attribute('cy').toPixels('y')
       var r = this.attribute('r').toPixels()
 
-      if (ctx !== null) {
+      if (ctx != null) {
         ctx.beginPath()
         ctx.arc(cx, cy, r, 0, Math.PI * 2, true)
         ctx.closePath()
@@ -1188,7 +1176,7 @@ function build (opts) {
       var cx = this.attribute('cx').toPixels('x')
       var cy = this.attribute('cy').toPixels('y')
 
-      if (ctx !== null) {
+      if (ctx != null) {
         ctx.beginPath()
         ctx.moveTo(cx, cy - ry)
         ctx.bezierCurveTo(cx + (KAPPA * rx), cy - ry, cx + rx, cy - (KAPPA * ry), cx + rx, cy)
@@ -1217,7 +1205,7 @@ function build (opts) {
     this.path = function (ctx) {
       var points = this.getPoints()
 
-      if (ctx !== null) {
+      if (ctx != null) {
         ctx.beginPath()
         ctx.moveTo(points[0].x, points[0].y)
         ctx.lineTo(points[1].x, points[1].y)
@@ -1242,13 +1230,13 @@ function build (opts) {
     this.points = svg.CreatePath(this.attribute('points').value)
     this.path = function (ctx) {
       var bb = new svg.BoundingBox(this.points[0].x, this.points[0].y)
-      if (ctx !== null) {
+      if (ctx != null) {
         ctx.beginPath()
         ctx.moveTo(this.points[0].x, this.points[0].y)
       }
       for (var i = 1; i < this.points.length; i++) {
         bb.addPoint(this.points[i].x, this.points[i].y)
-        if (ctx !== null) ctx.lineTo(this.points[i].x, this.points[i].y)
+        if (ctx != null) ctx.lineTo(this.points[i].x, this.points[i].y)
       }
       return bb
     }
@@ -1274,7 +1262,7 @@ function build (opts) {
     this.basePath = this.path
     this.path = function (ctx) {
       var bb = this.basePath(ctx)
-      if (ctx !== null) {
+      if (ctx != null) {
         ctx.lineTo(this.points[0].x, this.points[0].y)
         ctx.closePath()
       }
@@ -1320,7 +1308,7 @@ function build (opts) {
 
       this.isCommandOrEnd = function () {
         if (this.isEnd()) return true
-        return this.tokens[this.i + 1].match(/^[A-Za-z]$/) !== null
+        return this.tokens[this.i + 1].match(/^[A-Za-z]$/) != null
       }
 
       this.isRelativeCommand = function () {
@@ -1373,10 +1361,10 @@ function build (opts) {
       }
 
       this.getReflectedControlPoint = function () {
-        if (this.previousCommand.toLowerCase() !== 'c' &&
-            this.previousCommand.toLowerCase() !== 's' &&
-          this.previousCommand.toLowerCase() !== 'q' &&
-          this.previousCommand.toLowerCase() !== 't') {
+        if (this.previousCommand.toLowerCase() != 'c' &&
+            this.previousCommand.toLowerCase() != 's' &&
+          this.previousCommand.toLowerCase() != 'q' &&
+          this.previousCommand.toLowerCase() != 't') {
           return this.current
         }
 
@@ -1395,10 +1383,10 @@ function build (opts) {
 
       this.addMarker = function (p, from, priorTo) {
         // if the last angle isn't filled in because we didn't have this point yet ...
-        if (priorTo !== null && this.angles.length > 0 && this.angles[this.angles.length - 1] === null) {
+        if (priorTo != null && this.angles.length > 0 && this.angles[this.angles.length - 1] == null) {
           this.angles[this.angles.length - 1] = this.points[this.points.length - 1].angleTo(priorTo)
         }
-        this.addMarkerAngle(p, from === null ? null : from.angleTo(p))
+        this.addMarkerAngle(p, from == null ? null : from.angleTo(p))
       }
 
       this.addMarkerAngle = function (p, a) {
@@ -1409,9 +1397,9 @@ function build (opts) {
       this.getMarkerPoints = function () { return this.points }
       this.getMarkerAngles = function () {
         for (var i = 0; i < this.angles.length; i++) {
-          if (this.angles[i] === null) {
+          if (this.angles[i] == null) {
             for (var j = i + 1; j < this.angles.length; j++) {
-              if (this.angles[j] !== null) {
+              if (this.angles[j] != null) {
                 this.angles[i] = this.angles[j]
                 break
               }
@@ -1427,7 +1415,7 @@ function build (opts) {
       pp.reset()
 
       var bb = new svg.BoundingBox()
-      if (ctx !== null) ctx.beginPath()
+      if (ctx != null) ctx.beginPath()
       while (!pp.isEnd()) {
         pp.nextCommand()
         switch (pp.command) {
@@ -1436,13 +1424,13 @@ function build (opts) {
             var p = pp.getAsCurrentPoint()
             pp.addMarker(p)
             bb.addPoint(p.x, p.y)
-            if (ctx !== null) ctx.moveTo(p.x, p.y)
+            if (ctx != null) ctx.moveTo(p.x, p.y)
             pp.start = pp.current
             while (!pp.isCommandOrEnd()) {
               var p = pp.getAsCurrentPoint()
               pp.addMarker(p, pp.start)
               bb.addPoint(p.x, p.y)
-              if (ctx !== null) ctx.lineTo(p.x, p.y)
+              if (ctx != null) ctx.lineTo(p.x, p.y)
             }
             break
           case 'L':
@@ -1452,7 +1440,7 @@ function build (opts) {
               var p = pp.getAsCurrentPoint()
               pp.addMarker(p, c)
               bb.addPoint(p.x, p.y)
-              if (ctx !== null) ctx.lineTo(p.x, p.y)
+              if (ctx != null) ctx.lineTo(p.x, p.y)
             }
             break
           case 'H':
@@ -1462,7 +1450,7 @@ function build (opts) {
               pp.addMarker(newP, pp.current)
               pp.current = newP
               bb.addPoint(pp.current.x, pp.current.y)
-              if (ctx !== null) ctx.lineTo(pp.current.x, pp.current.y)
+              if (ctx != null) ctx.lineTo(pp.current.x, pp.current.y)
             }
             break
           case 'V':
@@ -1472,7 +1460,7 @@ function build (opts) {
               pp.addMarker(newP, pp.current)
               pp.current = newP
               bb.addPoint(pp.current.x, pp.current.y)
-              if (ctx !== null) ctx.lineTo(pp.current.x, pp.current.y)
+              if (ctx != null) ctx.lineTo(pp.current.x, pp.current.y)
             }
             break
           case 'C':
@@ -1484,7 +1472,7 @@ function build (opts) {
               var cp = pp.getAsCurrentPoint()
               pp.addMarker(cp, cntrl, p1)
               bb.addBezierCurve(curr.x, curr.y, p1.x, p1.y, cntrl.x, cntrl.y, cp.x, cp.y)
-              if (ctx !== null) ctx.bezierCurveTo(p1.x, p1.y, cntrl.x, cntrl.y, cp.x, cp.y)
+              if (ctx != null) ctx.bezierCurveTo(p1.x, p1.y, cntrl.x, cntrl.y, cp.x, cp.y)
             }
             break
           case 'S':
@@ -1496,7 +1484,7 @@ function build (opts) {
               var cp = pp.getAsCurrentPoint()
               pp.addMarker(cp, cntrl, p1)
               bb.addBezierCurve(curr.x, curr.y, p1.x, p1.y, cntrl.x, cntrl.y, cp.x, cp.y)
-              if (ctx !== null) ctx.bezierCurveTo(p1.x, p1.y, cntrl.x, cntrl.y, cp.x, cp.y)
+              if (ctx != null) ctx.bezierCurveTo(p1.x, p1.y, cntrl.x, cntrl.y, cp.x, cp.y)
             }
             break
           case 'Q':
@@ -1507,7 +1495,7 @@ function build (opts) {
               var cp = pp.getAsCurrentPoint()
               pp.addMarker(cp, cntrl, cntrl)
               bb.addQuadraticCurve(curr.x, curr.y, cntrl.x, cntrl.y, cp.x, cp.y)
-              if (ctx !== null) ctx.quadraticCurveTo(cntrl.x, cntrl.y, cp.x, cp.y)
+              if (ctx != null) ctx.quadraticCurveTo(cntrl.x, cntrl.y, cp.x, cp.y)
             }
             break
           case 'T':
@@ -1519,7 +1507,7 @@ function build (opts) {
               var cp = pp.getAsCurrentPoint()
               pp.addMarker(cp, cntrl, cntrl)
               bb.addQuadraticCurve(curr.x, curr.y, cntrl.x, cntrl.y, cp.x, cp.y)
-              if (ctx !== null) ctx.quadraticCurveTo(cntrl.x, cntrl.y, cp.x, cp.y)
+              if (ctx != null) ctx.quadraticCurveTo(cntrl.x, cntrl.y, cp.x, cp.y)
             }
             break
           case 'A':
@@ -1547,7 +1535,7 @@ function build (opts) {
                 ry *= Math.sqrt(l)
               }
             // cx', cy'
-              var s = (largeArcFlag === sweepFlag ? -1 : 1) * Math.sqrt(
+              var s = (largeArcFlag == sweepFlag ? -1 : 1) * Math.sqrt(
               ((Math.pow(rx, 2) * Math.pow(ry, 2)) - (Math.pow(rx, 2) * Math.pow(currp.y, 2)) - (Math.pow(ry, 2) * Math.pow(currp.x, 2))) /
               (Math.pow(rx, 2) * Math.pow(currp.y, 2) + Math.pow(ry, 2) * Math.pow(currp.x, 2))
             )
@@ -1584,7 +1572,7 @@ function build (opts) {
               pp.addMarkerAngle(cp, ah - dir * Math.PI)
 
               bb.addPoint(cp.x, cp.y) // TODO: this is too naive, make it better
-              if (ctx !== null) {
+              if (ctx != null) {
                 var r = rx > ry ? rx : ry
                 var sx = rx > ry ? 1 : rx / ry
                 var sy = rx > ry ? ry / rx : 1
@@ -1601,7 +1589,7 @@ function build (opts) {
             break
           case 'Z':
           case 'z':
-            if (ctx !== null) ctx.closePath()
+            if (ctx != null) ctx.closePath()
             pp.current = pp.start
         }
       }
@@ -1670,8 +1658,8 @@ function build (opts) {
     this.baseRender = this.render
     this.render = function (ctx, point, angle) {
       ctx.translate(point.x, point.y)
-      if (this.attribute('orient').valueOrDefault('auto') === 'auto') ctx.rotate(angle)
-      if (this.attribute('markerUnits').valueOrDefault('strokeWidth') === 'strokeWidth') ctx.scale(ctx.lineWidth, ctx.lineWidth)
+      if (this.attribute('orient').valueOrDefault('auto') == 'auto') ctx.rotate(angle)
+      if (this.attribute('markerUnits').valueOrDefault('strokeWidth') == 'strokeWidth') ctx.scale(ctx.lineWidth, ctx.lineWidth)
       ctx.save()
 
       // render me using a temporary svg element
@@ -1687,8 +1675,8 @@ function build (opts) {
       tempSvg.render(ctx)
 
       ctx.restore()
-      if (this.attribute('markerUnits').valueOrDefault('strokeWidth') === 'strokeWidth') ctx.scale(1 / ctx.lineWidth, 1 / ctx.lineWidth)
-      if (this.attribute('orient').valueOrDefault('auto') === 'auto') ctx.rotate(-angle)
+      if (this.attribute('markerUnits').valueOrDefault('strokeWidth') == 'strokeWidth') ctx.scale(1 / ctx.lineWidth, 1 / ctx.lineWidth)
+      if (this.attribute('orient').valueOrDefault('auto') == 'auto') ctx.rotate(-angle)
       ctx.translate(-point.x, -point.y)
     }
   }
@@ -1713,7 +1701,7 @@ function build (opts) {
     this.stops = []
     for (var i = 0; i < this.children.length; i++) {
       var child = this.children[i]
-      if (child.type === 'stop') this.stops.push(child)
+      if (child.type == 'stop') this.stops.push(child)
     }
 
     this.getGradient = function () {
@@ -1751,7 +1739,7 @@ function build (opts) {
       }
 
       var g = this.getGradient(ctx, element)
-      if (g === null) return addParentOpacity(stopsContainer.stops[stopsContainer.stops.length - 1].color)
+      if (g == null) return addParentOpacity(stopsContainer.stops[stopsContainer.stops.length - 1].color)
       for (var i = 0; i < stopsContainer.stops.length; i++) {
         g.addColorStop(stopsContainer.stops[i].offset, addParentOpacity(stopsContainer.stops[i].color))
       }
@@ -1802,7 +1790,7 @@ function build (opts) {
     this.attributesToInherit.push('y2')
 
     this.getGradient = function (ctx, element) {
-      var bb = this.gradientUnits() === 'objectBoundingBox' ? element.getBoundingBox() : null
+      var bb = this.gradientUnits() == 'objectBoundingBox' ? element.getBoundingBox() : null
 
       if (!this.attribute('x1').hasValue() &&
        !this.attribute('y1').hasValue() &&
@@ -1814,20 +1802,20 @@ function build (opts) {
         this.attribute('y2', true).value = 0
       }
 
-      var x1 = (this.gradientUnits() === 'objectBoundingBox'
+      var x1 = (this.gradientUnits() == 'objectBoundingBox'
         ? bb.x() + bb.width() * this.attribute('x1').numValue()
         : this.attribute('x1').toPixels('x'))
-      var y1 = (this.gradientUnits() === 'objectBoundingBox'
+      var y1 = (this.gradientUnits() == 'objectBoundingBox'
         ? bb.y() + bb.height() * this.attribute('y1').numValue()
         : this.attribute('y1').toPixels('y'))
-      var x2 = (this.gradientUnits() === 'objectBoundingBox'
+      var x2 = (this.gradientUnits() == 'objectBoundingBox'
         ? bb.x() + bb.width() * this.attribute('x2').numValue()
         : this.attribute('x2').toPixels('x'))
-      var y2 = (this.gradientUnits() === 'objectBoundingBox'
+      var y2 = (this.gradientUnits() == 'objectBoundingBox'
         ? bb.y() + bb.height() * this.attribute('y2').numValue()
         : this.attribute('y2').toPixels('y'))
 
-      if (x1 === x2 && y1 === y2) return null
+      if (x1 == x2 && y1 == y2) return null
       return ctx.createLinearGradient(x1, y1, x2, y2)
     }
   }
@@ -1851,27 +1839,27 @@ function build (opts) {
       if (!this.attribute('cy').hasValue()) this.attribute('cy', true).value = '50%'
       if (!this.attribute('r').hasValue()) this.attribute('r', true).value = '50%'
 
-      var cx = (this.gradientUnits() === 'objectBoundingBox'
+      var cx = (this.gradientUnits() == 'objectBoundingBox'
         ? bb.x() + bb.width() * this.attribute('cx').numValue()
         : this.attribute('cx').toPixels('x'))
-      var cy = (this.gradientUnits() === 'objectBoundingBox'
+      var cy = (this.gradientUnits() == 'objectBoundingBox'
         ? bb.y() + bb.height() * this.attribute('cy').numValue()
         : this.attribute('cy').toPixels('y'))
 
       var fx = cx
       var fy = cy
       if (this.attribute('fx').hasValue()) {
-        fx = (this.gradientUnits() === 'objectBoundingBox'
+        fx = (this.gradientUnits() == 'objectBoundingBox'
         ? bb.x() + bb.width() * this.attribute('fx').numValue()
         : this.attribute('fx').toPixels('x'))
       }
       if (this.attribute('fy').hasValue()) {
-        fy = (this.gradientUnits() === 'objectBoundingBox'
+        fy = (this.gradientUnits() == 'objectBoundingBox'
         ? bb.y() + bb.height() * this.attribute('fy').numValue()
         : this.attribute('fy').toPixels('y'))
       }
 
-      var r = (this.gradientUnits() === 'objectBoundingBox'
+      var r = (this.gradientUnits() == 'objectBoundingBox'
         ? (bb.width() + bb.height()) / 2.0 * this.attribute('r').numValue()
         : this.attribute('r').toPixels())
 
@@ -1911,7 +1899,7 @@ function build (opts) {
       var attributeType = this.attribute('attributeType').value
       var attributeName = this.attribute('attributeName').value
 
-      if (attributeType === 'CSS') {
+      if (attributeType == 'CSS') {
         return this.parent.style(attributeName, true)
       }
       return this.parent.attribute(attributeName, true)
@@ -1928,7 +1916,7 @@ function build (opts) {
 
     this.update = function (delta) {
       // set initial value
-      if (this.initialValue === null) {
+      if (this.initialValue == null) {
         this.initialValue = this.getProperty().value
         this.initialUnits = this.getProperty().getUnits()
       }
@@ -1936,14 +1924,14 @@ function build (opts) {
       // if we're past the end time
       if (this.duration > this.maxDuration) {
         // loop for indefinitely repeating animations
-        if (this.attribute('repeatCount').value === 'indefinite' ||
-         this.attribute('repeatDur').value === 'indefinite') {
+        if (this.attribute('repeatCount').value == 'indefinite' ||
+         this.attribute('repeatDur').value == 'indefinite') {
           this.duration = 0.0
-        } else if (this.attribute('fill').valueOrDefault('remove') === 'freeze' && !this.frozen) {
+        } else if (this.attribute('fill').valueOrDefault('remove') == 'freeze' && !this.frozen) {
           this.frozen = true
           this.parent.animationFrozen = true
           this.parent.animationFrozenValue = this.getProperty().value
-        } else if (this.attribute('fill').valueOrDefault('remove') === 'remove' && !this.removed) {
+        } else if (this.attribute('fill').valueOrDefault('remove') == 'remove' && !this.removed) {
           this.removed = true
           this.getProperty().value = this.parent.animationFrozen ? this.parent.animationFrozenValue : this.initialValue
           return true
@@ -2064,14 +2052,14 @@ function build (opts) {
     this.glyphs = []
     for (var i = 0; i < this.children.length; i++) {
       var child = this.children[i]
-      if (child.type === 'font-face') {
+      if (child.type == 'font-face') {
         this.fontFace = child
         if (child.style('font-family').hasValue()) {
           svg.Definitions[child.style('font-family').value] = this
         }
-      } else if (child.type === 'missing-glyph') this.missingGlyph = child
-      else if (child.type === 'glyph') {
-        if (child.arabicForm !== '') {
+      } else if (child.type == 'missing-glyph') this.missingGlyph = child
+      else if (child.type == 'glyph') {
+        if (child.arabicForm != '') {
           this.isRTL = true
           this.isArabic = true
           if (typeof this.glyphs[child.unicode] === 'undefined') this.glyphs[child.unicode] = []
@@ -2126,8 +2114,8 @@ function build (opts) {
       this.baseSetContext(ctx)
 
       var textBaseline = this.style('dominant-baseline').toTextBaseline()
-      if (textBaseline === null) textBaseline = this.style('alignment-baseline').toTextBaseline()
-      if (textBaseline !== null) ctx.textBaseline = textBaseline
+      if (textBaseline == null) textBaseline = this.style('alignment-baseline').toTextBaseline()
+      if (textBaseline != null) ctx.textBaseline = textBaseline
     }
 
     this.getBoundingBox = function () {
@@ -2150,14 +2138,14 @@ function build (opts) {
 
     this.getAnchorDelta = function (ctx, parent, startI) {
       var textAnchor = this.style('text-anchor').valueOrDefault('start')
-      if (textAnchor !== 'start') {
+      if (textAnchor != 'start') {
         var width = 0
         for (var i = startI; i < parent.children.length; i++) {
           var child = parent.children[i]
           if (i > startI && child.attribute('x').hasValue()) break // new group
           width += child.measureTextRecursive(ctx)
         }
-        return -1 * (textAnchor === 'end' ? width : width / 2.0)
+        return -1 * (textAnchor == 'end' ? width : width / 2.0)
       }
       return 0
     }
@@ -2201,23 +2189,23 @@ function build (opts) {
       var glyph = null
       if (font.isArabic) {
         var arabicForm = 'isolated'
-        if ((i === 0 || text[i - 1] === ' ') && i < text.length - 2 && text[i + 1] !== ' ') arabicForm = 'terminal'
-        if (i > 0 && text[i - 1] !== ' ' && i < text.length - 2 && text[i + 1] !== ' ') arabicForm = 'medial'
-        if (i > 0 && text[i - 1] !== ' ' && (i === text.length - 1 || text[i + 1] === ' ')) arabicForm = 'initial'
+        if ((i == 0 || text[i - 1] == ' ') && i < text.length - 2 && text[i + 1] != ' ') arabicForm = 'terminal'
+        if (i > 0 && text[i - 1] != ' ' && i < text.length - 2 && text[i + 1] != ' ') arabicForm = 'medial'
+        if (i > 0 && text[i - 1] != ' ' && (i == text.length - 1 || text[i + 1] == ' ')) arabicForm = 'initial'
         if (typeof font.glyphs[c] !== 'undefined') {
           glyph = font.glyphs[c][arabicForm]
-          if (glyph === null && font.glyphs[c].type === 'glyph') glyph = font.glyphs[c]
+          if (glyph == null && font.glyphs[c].type == 'glyph') glyph = font.glyphs[c]
         }
       } else {
         glyph = font.glyphs[c]
       }
-      if (glyph === null) glyph = font.missingGlyph
+      if (glyph == null) glyph = font.missingGlyph
       return glyph
     }
 
     this.renderChildren = function (ctx) {
       var customFont = this.parent.style('font-family').getDefinition()
-      if (customFont !== null) {
+      if (customFont != null) {
         var fontSize = this.parent.style('font-size').numValueOrDefault(svg.Font.Parse(svg.ctx.font).fontSize)
         var fontStyle = this.parent.style('font-style').valueOrDefault(svg.Font.Parse(svg.ctx.font).fontStyle)
         var text = this.getText()
@@ -2231,9 +2219,9 @@ function build (opts) {
           ctx.scale(scale, -scale)
           var lw = ctx.lineWidth
           ctx.lineWidth = ctx.lineWidth * customFont.fontFace.unitsPerEm / fontSize
-          if (fontStyle === 'italic') ctx.transform(1, 0, 0.4, 1, 0, 0)
+          if (fontStyle == 'italic') ctx.transform(1, 0, 0.4, 1, 0, 0)
           glyph.render(ctx)
-          if (fontStyle === 'italic') ctx.transform(1, 0, -0.4, 1, 0, 0)
+          if (fontStyle == 'italic') ctx.transform(1, 0, -0.4, 1, 0, 0)
           ctx.lineWidth = lw
           ctx.scale(1 / scale, -1 / scale)
           ctx.translate(-this.x, -this.y)
@@ -2246,8 +2234,8 @@ function build (opts) {
         return
       }
 
-      if (ctx.fillStyle !== '') ctx.fillText(svg.compressSpaces(this.getText()), this.x, this.y)
-      if (ctx.strokeStyle !== '') ctx.strokeText(svg.compressSpaces(this.getText()), this.x, this.y)
+      if (ctx.fillStyle != '') ctx.fillText(svg.compressSpaces(this.getText()), this.x, this.y)
+      if (ctx.strokeStyle != '') ctx.strokeText(svg.compressSpaces(this.getText()), this.x, this.y)
     }
 
     this.getText = function () {
@@ -2264,7 +2252,7 @@ function build (opts) {
 
     this.measureText = function (ctx) {
       var customFont = this.parent.style('font-family').getDefinition()
-      if (customFont !== null) {
+      if (customFont != null) {
         var fontSize = this.parent.style('font-size').numValueOrDefault(svg.Font.Parse(svg.ctx.font).fontSize)
         var measure = 0
         var text = this.getText()
@@ -2314,7 +2302,7 @@ function build (opts) {
 
     this.getText = function () {
       var element = this.getHrefAttribute().getDefinition()
-      if (element !== null) return element.children[0].getText()
+      if (element != null) return element.children[0].getText()
     }
   }
   svg.Element.tref.prototype = new svg.Element.TextElementBase()
@@ -2326,7 +2314,7 @@ function build (opts) {
 
     this.hasText = node.childNodes.length > 0
     for (var i = 0; i < node.childNodes.length; i++) {
-      if (node.childNodes[i].nodeType !== 3) this.hasText = false
+      if (node.childNodes[i].nodeType != 3) this.hasText = false
     }
 
     // this might contain text
@@ -2367,14 +2355,14 @@ function build (opts) {
     this.base(node)
 
     var href = this.getHrefAttribute().value
-    if (href === '') { return }
+    if (href == '') { return }
     var isSvg = href.match(/\.svg$/)
 
     svg.Images.push(this)
     this.loaded = false
     if (!isSvg) {
       this.img = document.createElement('img')
-      if (svg.opts['useCORS'] === true) { this.img.crossOrigin = 'Anonymous' }
+      if (svg.opts['useCORS'] == true) { this.img.crossOrigin = 'Anonymous' }
       var self = this
       this.img.onload = function () { self.loaded = true }
       this.img.onerror = function () { svg.log('ERROR: image "' + href + '" not found'); self.loaded = true }
@@ -2390,7 +2378,7 @@ function build (opts) {
 
       var width = this.attribute('width').toPixels('x')
       var height = this.attribute('height').toPixels('y')
-      if (width === 0 || height === 0) return
+      if (width == 0 || height == 0) return
 
       ctx.save()
       if (isSvg) {
@@ -2460,25 +2448,25 @@ function build (opts) {
     css = svg.compressSpaces(css) // replace whitespace
     var cssDefs = css.split('}')
     for (var i = 0; i < cssDefs.length; i++) {
-      if (svg.trim(cssDefs[i]) !== '') {
+      if (svg.trim(cssDefs[i]) != '') {
         var cssDef = cssDefs[i].split('{')
         var cssClasses = cssDef[0].split(',')
         var cssProps = cssDef[1].split(';')
         for (var j = 0; j < cssClasses.length; j++) {
           var cssClass = svg.trim(cssClasses[j])
-          if (cssClass !== '') {
+          if (cssClass != '') {
             var props = svg.Styles[cssClass] || {}
             for (var k = 0; k < cssProps.length; k++) {
               var prop = cssProps[k].indexOf(':')
               var name = cssProps[k].substr(0, prop)
               var value = cssProps[k].substr(prop + 1, cssProps[k].length - prop)
-              if (name !== null && value !== null) {
+              if (name != null && value != null) {
                 props[svg.trim(name)] = new svg.Property(svg.trim(name), svg.trim(value))
               }
             }
             svg.Styles[cssClass] = props
             svg.StylesSpecificity[cssClass] = getSelectorSpecificity(cssClass)
-            if (cssClass === '@font-face') {
+            if (cssClass == '@font-face') {
               var fontFamily = props['font-family'].value.replace(/"/g, '')
               var srcs = props['src'].value.split(',')
               for (var s = 0; s < srcs.length; s++) {
@@ -2517,17 +2505,17 @@ function build (opts) {
     var element = this.getHrefAttribute().getDefinition()
 
     this.path = function (ctx) {
-      if (element !== null) element.path(ctx)
+      if (element != null) element.path(ctx)
     }
 
     this.getBoundingBox = function () {
-      if (element !== null) return element.getBoundingBox()
+      if (element != null) return element.getBoundingBox()
     }
 
     this.renderChildren = function (ctx) {
-      if (element !== null) {
+      if (element != null) {
         var tempSvg = element
-        if (element.type === 'symbol') {
+        if (element.type == 'symbol') {
           // render me using a temporary svg element in symbol cases (http://www.w3.org/TR/SVG/struct.html#UseElement)
           tempSvg = new svg.Element.svg()
           tempSvg.type = 'svg'
@@ -2536,7 +2524,7 @@ function build (opts) {
           tempSvg.attributes['overflow'] = new svg.Property('overflow', element.attribute('overflow').value)
           tempSvg.children = element.children
         }
-        if (tempSvg.type === 'svg') {
+        if (tempSvg.type == 'svg') {
           // if symbol or svg, inherit width/height from me
           if (this.attribute('width').hasValue()) tempSvg.attributes['width'] = new svg.Property('width', this.attribute('width').value)
           if (this.attribute('height').hasValue()) tempSvg.attributes['height'] = new svg.Property('height', this.attribute('height').value)
@@ -2562,7 +2550,7 @@ function build (opts) {
       var width = this.attribute('width').toPixels('x')
       var height = this.attribute('height').toPixels('y')
 
-      if (width === 0 && height === 0) {
+      if (width == 0 && height == 0) {
         var bb = new svg.BoundingBox()
         for (var i = 0; i < this.children.length; i++) {
           bb.addBoundingBox(this.children[i].getBoundingBox())
@@ -2789,7 +2777,7 @@ function build (opts) {
     this.extraFilterDistance = this.blurRadius
 
     this.apply = function (ctx, x, y, width, height) {
-      if (typeof StackBlur.canvasRGBA === 'undefined') {
+      if (typeof stackBlur.canvasRGBA === 'undefined') {
         svg.log('ERROR: StackBlur.js must be included for blur to work')
         return
       }
@@ -2798,7 +2786,7 @@ function build (opts) {
       ctx.canvas.id = svg.UniqueId()
       ctx.canvas.style.display = 'none'
       document.body.appendChild(ctx.canvas)
-      StackBlur.canvasRGBA(ctx.canvas.id, x, y, width, height, this.blurRadius)
+      stackBlur.canvasRGBA(ctx.canvas.id, x, y, width, height, this.blurRadius)
       document.body.removeChild(ctx.canvas)
     }
   }
@@ -2822,7 +2810,7 @@ function build (opts) {
   // element factory
   svg.CreateElement = function (node) {
     var className = node.nodeName.replace(/^[^:]+:/, '') // remove namespace
-    className = className.replace(/-/g, '') // remove dashes
+    className = className.replace(/\-/g, '') // remove dashes
     var e = null
     if (typeof svg.Element[className] !== 'undefined') {
       e = new svg.Element[className](node)
@@ -2860,7 +2848,7 @@ function build (opts) {
     }
 
     // bind mouse
-    if (svg.opts['ignoreMouse'] !== true) {
+    if (svg.opts['ignoreMouse'] != true) {
       ctx.canvas.onclick = function (e) {
         var p = mapXY(new svg.Point(e.clientX, e.clientY))
         svg.Mouse.onclick(p.x, p.y)
@@ -2881,44 +2869,46 @@ function build (opts) {
       svg.ViewPort.Clear()
       if (ctx.canvas.parentNode) svg.ViewPort.SetCurrent(ctx.canvas.parentNode.clientWidth, ctx.canvas.parentNode.clientHeight)
 
-      if (svg.opts['ignoreDimensions'] !== true) {
+      if (svg.opts['ignoreDimensions'] != true) {
         // set canvas size
         if (e.style('width').hasValue()) {
           ctx.canvas.width = e.style('width').toPixels('x')
-          ctx.canvas.style.width = ctx.canvas.width + 'px'
+          if (typeof ctx.canvas.style !== 'undefined') {
+            ctx.canvas.style.width = ctx.canvas.width + 'px'
+          }
         }
         if (e.style('height').hasValue()) {
           ctx.canvas.height = e.style('height').toPixels('y')
-          ctx.canvas.style.height = ctx.canvas.height + 'px'
+          if (typeof ctx.canvas.style !== 'undefined') {
+            ctx.canvas.style.height = ctx.canvas.height + 'px'
+          }
         }
       }
       var cWidth = ctx.canvas.clientWidth || ctx.canvas.width
       var cHeight = ctx.canvas.clientHeight || ctx.canvas.height
-      if (svg.opts['ignoreDimensions'] === true && e.style('width').hasValue() && e.style('height').hasValue()) {
+      if (svg.opts['ignoreDimensions'] == true && e.style('width').hasValue() && e.style('height').hasValue()) {
         cWidth = e.style('width').toPixels('x')
         cHeight = e.style('height').toPixels('y')
       }
       svg.ViewPort.SetCurrent(cWidth, cHeight)
 
-      if (svg.opts['offsetX'] !== null) e.attribute('x', true).value = svg.opts['offsetX']
-      if (svg.opts['offsetY'] !== null) e.attribute('y', true).value = svg.opts['offsetY']
-      if (svg.opts['scaleWidth'] !== null || svg.opts['scaleHeight'] !== null) {
-        var xRatio = null
-        var yRatio = null
-        var viewBox = svg.ToNumberArray(e.attribute('viewBox').value)
+      if (svg.opts['offsetX'] != null) e.attribute('x', true).value = svg.opts['offsetX']
+      if (svg.opts['offsetY'] != null) e.attribute('y', true).value = svg.opts['offsetY']
+      if (svg.opts['scaleWidth'] != null || svg.opts['scaleHeight'] != null) {
+        var xRatio = null, yRatio = null, viewBox = svg.ToNumberArray(e.attribute('viewBox').value)
 
-        if (svg.opts['scaleWidth'] !== null) {
+        if (svg.opts['scaleWidth'] != null) {
           if (e.attribute('width').hasValue()) xRatio = e.attribute('width').toPixels('x') / svg.opts['scaleWidth']
           else if (!isNaN(viewBox[2])) xRatio = viewBox[2] / svg.opts['scaleWidth']
         }
 
-        if (svg.opts['scaleHeight'] !== null) {
+        if (svg.opts['scaleHeight'] != null) {
           if (e.attribute('height').hasValue()) yRatio = e.attribute('height').toPixels('y') / svg.opts['scaleHeight']
           else if (!isNaN(viewBox[3])) yRatio = viewBox[3] / svg.opts['scaleHeight']
         }
 
-        if (xRatio === null) { xRatio = yRatio }
-        if (yRatio === null) { yRatio = xRatio }
+        if (xRatio == null) { xRatio = yRatio }
+        if (yRatio == null) { yRatio = xRatio }
 
         e.attribute('width', true).value = svg.opts['scaleWidth']
         e.attribute('height', true).value = svg.opts['scaleHeight']
@@ -2926,7 +2916,7 @@ function build (opts) {
       }
 
       // clear and render
-      if (svg.opts['ignoreClear'] !== true) {
+      if (svg.opts['ignoreClear'] != true) {
         ctx.clearRect(0, 0, cWidth, cHeight)
       }
       e.render(ctx)
@@ -2950,12 +2940,12 @@ function build (opts) {
       }
 
       // need update from mouse events?
-      if (svg.opts['ignoreMouse'] !== true) {
+      if (svg.opts['ignoreMouse'] != true) {
         needUpdate = needUpdate | svg.Mouse.hasEvents()
       }
 
       // need update from animations?
-      if (svg.opts['ignoreAnimation'] !== true) {
+      if (svg.opts['ignoreAnimation'] != true) {
         for (var i = 0; i < svg.Animations.length; i++) {
           needUpdate = needUpdate | svg.Animations[i].update(1000 / svg.FRAMERATE)
         }
@@ -2963,7 +2953,7 @@ function build (opts) {
 
       // need update from redraw?
       if (typeof svg.opts['forceRedraw'] === 'function') {
-        if (svg.opts['forceRedraw']() === true) needUpdate = true
+        if (svg.opts['forceRedraw']() == true) needUpdate = true
       }
 
       // render if needed
@@ -2982,7 +2972,7 @@ function build (opts) {
 
   svg.Mouse = new function () {
     this.events = []
-    this.hasEvents = function () { return this.events.length !== 0 }
+    this.hasEvents = function () { return this.events.length != 0 }
 
     this.onclick = function (x, y) {
       this.events.push({ type: 'onclick',
