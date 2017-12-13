@@ -14,7 +14,7 @@
     "type": "git",
     "url": "git://github.com/gabelerner/canvg.git"
   },
-  "main": "canvg.js",
+  "main": "build/canvg.js",
   "version": "1.0.0",
   "devDependencies": {
     "chai": "^4.1.2",
